@@ -1,0 +1,77 @@
+package com.medicos.api.model.medico;
+
+import com.medicos.api.model.endereco.Endereco;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+// Classe modelo responsável por criar uma tabela e suas colunas no BD.
+
+@Getter // Lombok - Cria get para todos os atributos.
+@Setter // Lombok - Cria set para todos os atributos.
+@AllArgsConstructor // Lombok - Cria um construtor com todos os atributos.
+@NoArgsConstructor // Lombok - Cria um construtor com nenhum atributo.
+@EqualsAndHashCode(of = "id") // Lombok - Cria uma lógica de comparação através do campo "id".
+@Entity // SPRING JPA - Informa que a classe abaixo é uma entidade, ou seja, será uma tabela no BD.
+@Table(name = "medicos") // SPRING JPA *Opcional, gera uma tabela com o nome medicos no BD.
+public class Medico {
+
+    @Id // SPRING JPA - Informa para o BD que a chave primária PK, é o id.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // SPRING JPA - Cria o id único de forma automática
+    private Integer id; // Não está vindo do insomnia 
+
+    private String nome;
+    private String email;
+    private String telefone;
+    private String crm;
+    private Boolean ativo = true;
+
+    @Enumerated(EnumType.STRING) // SPRING JPA - Informa para o BD que o atributo é do tipo enum.
+    private Especialidade especialidade;
+
+    @Embedded // Utilizada na classe pai, associa uma entidade a uma tabela auxiliar
+    private Endereco endereco;
+    
+    // Constructor com o recebimento dos dados convertendo para objeto
+    public Medico(DadosCadastroMedico dados) {
+        this.nome = dados.nome();
+        this.email = dados.email();
+        this.telefone = dados.telefone();
+        this.crm = dados.crm();
+        this.especialidade = dados.especialidade();
+        this.endereco = new Endereco(dados.endereco());
+
+    }
+
+    // Método para verificar a atualização do médico, recebendo um objeto do tipo DadosAtualizacaoMedico e atualizando os atributos do médico com os dados recebidos na requisição.
+    public void atualizarInformacoes(DadosAtualizacaoMedico dados) {
+        // Verifica se o nome recebido é diferente de null, ou seja, se o nome foi enviado na requisição da atualização (PUT), e se for diferente de null, atualiza o nome do médico com o novo nome recebido.
+        if(dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+        if(dados.email() != null) {
+            this.email = dados.email();
+        }
+        if(dados.endereco() != null) {
+            this.endereco.atualizarInformacoes(dados.endereco());
+        }
+    }
+
+    // Método responsável por alterar o status do médico de true para false
+    public void exclusaoLogica() {
+        this.ativo = false;
+    }
+
+
+
+}
